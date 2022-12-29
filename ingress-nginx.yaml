@@ -1,4 +1,6 @@
 # https://kubernetes.github.io/ingress-nginx/deploy/#installation-guide
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.5.1/deploy/static/provider/cloud/deploy.yaml
+# kubectl apply -f ingress-nginx.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
