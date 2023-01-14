@@ -1,5 +1,9 @@
 import express, { Request, Response } from "express";
-import { NotFoundError, requireAuth } from "@lvtickets/common";
+import {
+  NotAuthorizedError,
+  NotFoundError,
+  requireAuth,
+} from "@lvtickets/common";
 
 import { Ticket } from "../models/ticket";
 
@@ -13,6 +17,10 @@ router.put(
 
     if (!ticket) {
       throw new NotFoundError();
+    }
+
+    if (ticket.userId !== req.currentUser!.id) {
+      throw new NotAuthorizedError();
     }
 
     res.send(ticket);
