@@ -1,6 +1,8 @@
 import { OrderStatus } from "@lvtickets/common";
 import mongoose from "mongoose";
 
+import { TicketDoc } from "./ticket";
+
 interface OrderAttrs {
   userId: string;
   status: OrderStatus;
@@ -27,7 +29,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      require: true,
+      required: true,
       enum: Object.values(OrderStatus),
       default: OrderStatus.Created,
     },
