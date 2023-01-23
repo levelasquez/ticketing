@@ -29,6 +29,8 @@ router.delete(
 
     await order.save();
 
+    // Publishing an event saying this was cancelled!
+
     res.status(204).send(order);
   }
 );
