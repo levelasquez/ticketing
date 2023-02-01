@@ -36,4 +36,24 @@ it("returns a 401 when pucharsing an order that doesnt belong to the user", asyn
     .expect(401);
 });
 
-it("returns a 400 when pucharsing a cancelled order", async () => {});
+it("returns a 400 when pucharsing a cancelled order", async () => {
+  const userId = new mongoose.Types.ObjectId().toHexString();
+
+  const order = Order.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    price: 20,
+    status: OrderStatus.Cancelled,
+    userId,
+    version: 0,
+  });
+  await order.save();
+
+  await request(app)
+    .post("/api/payments")
+    .set("Cookie", global.signin(userId))
+    .send({
+      token: "asd",
+      orderId: order.id,
+    })
+    .expect(400);
+});
