@@ -1,5 +1,3 @@
-import { body } from "express-validator";
-import express, { Request, Response } from "express";
 import {
   BadRequestError,
   NotAuthorizedError,
@@ -8,7 +6,10 @@ import {
   requireAuth,
   validateRequest,
 } from "@lvtickets/common";
+import { body } from "express-validator";
+import express, { Request, Response } from "express";
 
+import { stripe } from "../stripe";
 import { Order } from "../models/order";
 
 const router = express.Router();
@@ -34,6 +35,12 @@ router.post(
     if (order.status === OrderStatus.Cancelled) {
       throw new BadRequestError("Cannot pay for an cancelled order");
     }
+
+    await stripe.charges.create({
+      currency: "usd",
+      amount: order.price * 100,
+      source: token,
+    });
 
     res.send({ success: true });
   }
