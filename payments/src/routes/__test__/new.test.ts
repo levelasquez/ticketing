@@ -5,6 +5,8 @@ import { OrderStatus } from "@lvtickets/common";
 import { app } from "../../app";
 import { Order } from "../../models/order";
 
+jest.mock("../../stripe");
+
 it("returns a 404 when pucharsing an order that does not exists", async () => {
   await request(app)
     .post("/api/payments")
@@ -56,4 +58,25 @@ it("returns a 400 when pucharsing a cancelled order", async () => {
       orderId: order.id,
     })
     .expect(400);
+});
+
+it("returns a 204 with valid inputs", async () => {
+  const userId = new mongoose.Types.ObjectId().toHexString();
+
+  const order = Order.build({
+    id: new mongoose.Types.ObjectId().toHexString(),
+    price: 20,
+    status: OrderStatus.Created,
+    userId,
+    version: 0,
+  });
+  await order.save();
+
+  await request(app)
+    .post("/api/payments")
+    .set("Cookie", global.signin(userId))
+    .send({
+      token: "tok_visa",
+      orderId: order.id,
+    });
 });
