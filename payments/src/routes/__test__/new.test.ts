@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { OrderStatus } from "@lvtickets/common";
 
 import { app } from "../../app";
+import { stripe } from "../../stripe";
 import { Order } from "../../models/order";
 
 jest.mock("../../stripe");
@@ -60,7 +61,7 @@ it("returns a 400 when pucharsing a cancelled order", async () => {
     .expect(400);
 });
 
-it("returns a 204 with valid inputs", async () => {
+it("returns a 201 with valid inputs", async () => {
   const userId = new mongoose.Types.ObjectId().toHexString();
 
   const order = Order.build({
@@ -78,5 +79,12 @@ it("returns a 204 with valid inputs", async () => {
     .send({
       token: "tok_visa",
       orderId: order.id,
-    });
+    })
+    .expect(201);
+
+  const chargeOptions = (stripe.charges.create as jest.Mock).mock.calls[0][0];
+
+  expect(chargeOptions.source).toEqual("tok_visa");
+  expect(chargeOptions.amount).toEqual(20 * 100);
+  expect(chargeOptions.currency).toEqual("usd");
 });
