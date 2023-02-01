@@ -6,7 +6,11 @@ import { app } from "../../app";
 import { stripe } from "../../stripe";
 import { Order } from "../../models/order";
 
-jest.mock("../../stripe");
+// If you use the mock - Remember to change the name of the file from stripe.ts.old to stripe.ts
+// You don't need the setEnvVars.ts, you can delete it and remove from the package json config
+// Or you can just rename it from setEnvVars.ts.example to setEnvVars.ts and config a fake value
+// It is not gona be used
+// jest.mock("../../stripe");
 
 it("returns a 404 when pucharsing an order that does not exists", async () => {
   await request(app)
@@ -62,11 +66,15 @@ it("returns a 400 when pucharsing a cancelled order", async () => {
 });
 
 it("returns a 201 with valid inputs", async () => {
+  // Delete if you use the mock
+  const price = Math.floor(Math.random() * 100000);
   const userId = new mongoose.Types.ObjectId().toHexString();
 
   const order = Order.build({
     id: new mongoose.Types.ObjectId().toHexString(),
-    price: 20,
+    // If you use the mock
+    // price: 20,
+    price,
     status: OrderStatus.Created,
     userId,
     version: 0,
@@ -82,9 +90,17 @@ it("returns a 201 with valid inputs", async () => {
     })
     .expect(201);
 
-  const chargeOptions = (stripe.charges.create as jest.Mock).mock.calls[0][0];
+  // If you use the mock
+  // const chargeOptions = (stripe.charges.create as jest.Mock).mock.calls[0][0];
+  // expect(chargeOptions.source).toEqual("tok_visa");
+  // expect(chargeOptions.amount).toEqual(20 * 100);
+  // expect(chargeOptions.currency).toEqual("usd");
 
-  expect(chargeOptions.source).toEqual("tok_visa");
-  expect(chargeOptions.amount).toEqual(20 * 100);
-  expect(chargeOptions.currency).toEqual("usd");
+  const stripeCharges = await stripe.charges.list({ limit: 50 });
+  const stripeCharge = stripeCharges.data.find((charge) => {
+    return charge.amount === price * 100;
+  });
+
+  expect(stripeCharge).toBeDefined();
+  expect(stripeCharge!.currency).toEqual("usd");
 });
