@@ -5,6 +5,7 @@ import { OrderStatus } from "@lvtickets/common";
 import { app } from "../../app";
 import { stripe } from "../../stripe";
 import { Order } from "../../models/order";
+import { Payment } from "../../models/payment";
 
 // If you use the mock - Remember to change the name of the file from stripe.ts.old to stripe.ts
 // You don't need the setEnvVars.ts, you can delete it and remove from the package json config
@@ -103,4 +104,11 @@ it("returns a 201 with valid inputs", async () => {
 
   expect(stripeCharge).toBeDefined();
   expect(stripeCharge!.currency).toEqual("usd");
+
+  const payment = await Payment.findOne({
+    orderId: order.id,
+    stripeId: stripeCharge!.id,
+  });
+
+  expect(payment).not.toBeNull();
 });
